@@ -107,7 +107,3 @@ vix_ret.plot.hist(bins = opt_bins(vix_ret))
 
 #def vix_front_month():
     
-!git init    
-!git add "file.py"
-!git commit -m "My commit"
-!git push origin master
