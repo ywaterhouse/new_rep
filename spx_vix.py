@@ -83,25 +83,32 @@ two_ret.plot.hist(bins = opt_bins(two_ret))
 """
 
 """ALL VIX"""
- #vix front month returns
- 
-vix_df.groupby(vix_df['expiration'])
+#making into 15 min interval 
 vix_df["quote_datetime"] = pd.to_datetime(vix_df.quote_datetime) 
-vix_df['expiration'] = pd.to_datetime(vix_df.expiration)
 vix_df = vix_df.set_index(vix_df['quote_datetime'])
 vix_df = vix_df.resample('15T').first()
 
-vix_df['front_month'] = False
+#calculating difference between expiration and trade date 
+vix_df['trade_date'] = pd.to_datetime(vix_df['trade_date']).dt.date
+vix_df['expiration'] = pd.to_datetime(vix_df['expiration']).dt.date
+
+for index in vix_df.index:
+    vix_df.at[index,'time_diff'] = vix_df.at[index,'trade_date'] - vix_df.at[index,'expiration']
+
+#deciding if front month or not 
+
+"""vix_df.groupby(vix_df['expiration'])
+vix_df['expiration'] = pd.to_datetime(vix_df.expiration)
+vix_df['front_month'] = False"""
 
 #for index in vix_df.index:
-vix_df['month_diff'] = (vix_df.at[index,'expiration'] - vix_df.at[index,'quote_datetime'])
-    if vix_df.month_diff < 1: 
+#    if vix_df.month_diff < 1: 
     # if expiration date is more than a month after or before the trade date, then vix_df is false, else true 
-        vix_df.at[index, 'front_month'] = True
+#        vix_df.at[index, 'front_month'] = True
 
     vix_df['front_month'] = 'Yes'
-idk = vix_df.month_diff.unique()
-vix_df.groupby(vix_df['expiration'])
+#idk = vix_df.month_diff.unique()
+#vix_df.groupby(vix_df['expiration'])
 
 #vix_ret = vix_df['vix_returns'].loc[(vix_df['vix_returns']>vix_df['vix_returns'].mean()-vix_df['vix_returns'].std()*3 )&(vix_df['vix_returns']<vix_df['vix_returns'].mean()+vix_df['vix_returns'].std()*3 )]
 #vix_ret.plot.hist(bins = opt_bins(vix_ret))
