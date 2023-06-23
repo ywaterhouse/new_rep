@@ -83,21 +83,29 @@ two_ret.plot.hist(bins = opt_bins(two_ret))
 """
 
 """ALL VIX"""
-#group by expiration first 
+ #vix front month returns
+ 
 vix_df.groupby(vix_df['expiration'])
-vix_df["quote_datetime"] = pd.to_datetime(vix_df.quote_datetime)
+vix_df["quote_datetime"] = pd.to_datetime(vix_df.quote_datetime) 
+vix_df['expiration'] = pd.to_datetime(vix_df.expiration)
 vix_df = vix_df.set_index(vix_df['quote_datetime'])
 vix_df = vix_df.resample('15T').first()
 
+vix_df['front_month'] = False
 
+#for index in vix_df.index:
+vix_df['month_diff'] = (vix_df.at[index,'expiration'] - vix_df.at[index,'quote_datetime'])
+    if vix_df.month_diff < 1: 
+    # if expiration date is more than a month after or before the trade date, then vix_df is false, else true 
+        vix_df.at[index, 'front_month'] = True
 
-vix_df['date'] = vix_df.quote_datetime.dt.date
-vix_df['vix_returns'] = vix_df.groupby('date')['close'].apply(lambda x: np.log(x) - np.log(x.shift(1)))
+    vix_df['front_month'] = 'Yes'
+idk = vix_df.month_diff.unique()
+vix_df.groupby(vix_df['expiration'])
 
-
-vix_ret = vix_df['vix_returns'].loc[(vix_df['vix_returns']>vix_df['vix_returns'].mean()-vix_df['vix_returns'].std()*3 )&(vix_df['vix_returns']<vix_df['vix_returns'].mean()+vix_df['vix_returns'].std()*3 )]
-vix_ret.plot.hist(bins = opt_bins(vix_ret))
-
+#vix_ret = vix_df['vix_returns'].loc[(vix_df['vix_returns']>vix_df['vix_returns'].mean()-vix_df['vix_returns'].std()*3 )&(vix_df['vix_returns']<vix_df['vix_returns'].mean()+vix_df['vix_returns'].std()*3 )]
+#vix_ret.plot.hist(bins = opt_bins(vix_ret))
+    
 """
 !git add "file.py"
 !git commit -m "My commit"
@@ -105,5 +113,3 @@ vix_ret.plot.hist(bins = opt_bins(vix_ret))
 !git push -u origin master
 """
 
-#def vix_front_month():
-    
