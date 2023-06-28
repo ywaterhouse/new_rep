@@ -87,15 +87,82 @@ two_ret.plot.hist(bins = opt_bins(two_ret))
 vix_df["quote_datetime"] = pd.to_datetime(vix_df.quote_datetime) 
 vix_df = vix_df.set_index(vix_df['quote_datetime'])
 vix_df = vix_df.resample('15T').first()
+vix_df = vix_df.dropna(how = 'all')
+vix_df['trade_date'] = pd.to_datetime(vix_df['trade_date'])
+vix_df['expiration'] = pd.to_datetime(vix_df['expiration'])
+vix_df['front_month'] = False
 
-#calculating difference between expiration and trade date 
-vix_df['trade_date'] = pd.to_datetime(vix_df['trade_date']).dt.date
-vix_df['expiration'] = pd.to_datetime(vix_df['expiration']).dt.date
 
+#if trade date is less than expiration even after trade date is moved up a month, 
+
+#for each index, if the trade_date is within a month before the trade date, that is a front_month 
 for index in vix_df.index:
-    vix_df.at[index,'time_diff'] = vix_df.at[index,'trade_date'] - vix_df.at[index,'expiration']
+    vix_df.at[index,'month_diffs'] = vix_df.at[index,'expiration'] - vix_df.at[index,'trade_date']
+    if vix_df.at[index,'month_diffs'] <= pd.Timedelta(days=31):
+        vix_df.at[index,'front_month'] = True
+    else:
+        vix_df.at[index,'front_month'] = False
 
-#deciding if front month or not 
+vix_get_front = vix_df.loc[vix_df['front_month'] == True]
+vix_get_front['vix_returns'] = np.log(vix_get_front.close) - np.log(vix_get_front.close.shift(1))
+
+
+"""  
+    if vix_df.at[index,'date'] < vix_df.at[index,'expiration'] and :
+        vix_df.at[index,'front_mon'] = True
+    else: 
+        vix_df.at[index,'front_mon'] = False
+    print(date)
+    if vix_df.at[index,'expiration'] == vix_df.at[index,'trade_date']:
+        vix_df.at[index,'front_month'] = True
+    # if the expiration index is " " then test to see if trade_date is a month before that 
+    if vix_df.at[index,'expiration'] == 2004-0o5-19 and 2004-0o4-18 < vix_df.at[index,'trade_date'] < 2004-0o5-19:
+        vix_df.at[index,'front_month'] = True
+"""
+# calcuate 
+
+"""
+vix_df.groupby(vix_df['expiration'])
+#calculating difference between expiration and trade date 
+vix_df['trade_date'] = pd.to_datetime(vix_df['trade_date'])
+vix_df['expiration'] = pd.to_datetime(vix_df['expiration'])
+"""
+
+"""
+vix_df['expiration'].unique()
+vix_expirations = pd.to_datetime(vix_expirations)
+vix_df['trade_date'] = pd.to_datetime(vix_df['trade_date'])
+vix_df['expiration'] = pd.to_datetime(vix_df['expiration'])
+vix_df.groupby('expiration')
+vix_df['front_month'] = False
+vix_front = False
+"""
+#vix_df['trade_month'] = vix_df.trade_date.dt.month  
+#vix_df['expiration_month'] = vix_df.expiration.dt.month
+#vix_df['month_diff'] = vix_df.expiration_month - vix_df.trade_month #calc month diffs in a different way, using for loop 
+ 
+# get month and days diff 
+#vix_df['trade_month'] = pd.to_datetime(vix_df['trade_date']).dt.month_name()
+#vix_df['expiration_month'] = pd.to_datetime(vix_df['expiration']).dt.month_name()
+#vix_df['trade_date'] = pd.to_datetime(vix_df['trade_date']).dt.date_name()
+#vix_df['expiration_date'] = pd.to_datetime(vix_df['expiration']).dt.date_name()
+#vix_df['trade_dayte'] = pd.to_datetime(vix_df['trade_date']).dt.day
+#vix_df['expiration_date'] = pd.to_datetime(vix_df['expiration']).dt.day
+
+
+#while trade_month has not hit that element in series and it is not less than 1 month 
+#it will calc returns with that exp date 
+
+
+#front month: if quote_datetime is less than a month away
+
+""" New DF where calc occurs"""
+#vix_get_front = vix_df.loc[vix_df['month_diff'] == 1]
+#vix_get_front['vix_returns'] = np.log(vix_get_front.close) - np.log(vix_get_front.close.shift(1))
+
+    #vix_df.at[index,'time_diff'] = ((vix_df.at[index,'trade_date'] - vix_df.at[index,'expiration'])/np.timedelta64(1, 'M'))
+    # if more than a month after trade date, 
+
 
 """vix_df.groupby(vix_df['expiration'])
 vix_df['expiration'] = pd.to_datetime(vix_df.expiration)
@@ -105,14 +172,12 @@ vix_df['front_month'] = False"""
 #    if vix_df.month_diff < 1: 
     # if expiration date is more than a month after or before the trade date, then vix_df is false, else true 
 #        vix_df.at[index, 'front_month'] = True
-
-    vix_df['front_month'] = 'Yes'
-#idk = vix_df.month_diff.unique()
+idk = vix_df.front_month.unique()
 #vix_df.groupby(vix_df['expiration'])
 
 #vix_ret = vix_df['vix_returns'].loc[(vix_df['vix_returns']>vix_df['vix_returns'].mean()-vix_df['vix_returns'].std()*3 )&(vix_df['vix_returns']<vix_df['vix_returns'].mean()+vix_df['vix_returns'].std()*3 )]
 #vix_ret.plot.hist(bins = opt_bins(vix_ret))
-    
+
 """
 !git add "file.py"
 !git commit -m "My commit"
