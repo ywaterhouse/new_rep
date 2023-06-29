@@ -88,21 +88,44 @@ vix_df["quote_datetime"] = pd.to_datetime(vix_df.quote_datetime)
 vix_df = vix_df.set_index(vix_df['quote_datetime'])
 vix_df = vix_df.resample('15T').first()
 vix_df = vix_df.dropna(how = 'all')
+
+vix_expirations = vix_df['expiration'].unique()
+vix_expirations = np.sort(vix_expirations)
+vix_expirations = pd.to_datetime(vix_expirations)
+
 vix_df['trade_date'] = pd.to_datetime(vix_df['trade_date'])
 vix_df['expiration'] = pd.to_datetime(vix_df['expiration'])
 vix_df['front_month'] = False
 
+time_df = pd.DataFrame(vix_expirations)
+time_df = time_df.rename_axis('expirations')
+for index in vix_df.index: 
+    dt = vix_df.at[index,'trade_date'] 
+    time_df[dt] = time_df[0] - dt 
+time_df = time_df.set_index(0) 
+time_df = time_df.T 
+time_df = time_df.mask(time_df < pd.Timedelta(0))
+   
+for index in time_df:
+    time_df['smallest'] =time_df.idxmin(axis=1)
 
-#if trade date is less than expiration even after trade date is moved up a month, 
+
+
+# want to subtract every trade_date from every possible expiration and
+# then pick out the smallest difference and make a list of that and
+# then compare that list with the listed expiration date and if they match, 
+#then that is a front month 
+
+
 
 #for each index, if the trade_date is within a month before the trade date, that is a front_month 
-for index in vix_df.index:
+"""for index in vix_df.index:
     vix_df.at[index,'month_diffs'] = vix_df.at[index,'expiration'] - vix_df.at[index,'trade_date']
-    if vix_df.at[index,'month_diffs'] <= pd.Timedelta(days=31):
+    if vix_df.at[index,'month_diffs'] <= #need to compare it to something else bc some years, their expiration dates are not one month diff:
         vix_df.at[index,'front_month'] = True
     else:
         vix_df.at[index,'front_month'] = False
-
+"""
 vix_get_front = vix_df.loc[vix_df['front_month'] == True]
 vix_get_front['vix_returns'] = np.log(vix_get_front.close) - np.log(vix_get_front.close.shift(1))
 
