@@ -39,6 +39,10 @@ def beta_covariance(index,index1):
     E=merge_df[index1] 
     betas = np.cov(E,D)[0][1]/np.var(D)
     return betas
+
+def opt_bins(returns):
+    bin_num = int(np.log2(returns.count())+1)
+    return bin_num 
     
 """SPX_DF""" 
 #change type to then make time zone the same as vix  
@@ -49,6 +53,7 @@ spx15_df = spx_df.copy()
 clean_df(spx_df,'quote_datetime','date','close')
 spx_df['spx_returns'] = spx_df.groupby('date')['close'].apply(lambda x : np.log(x) - np.log(x.shift(1))) 
 spx1_ret = remove_outliers(spx_df,'spx_returns')  
+spx1_ret.plot.hist(bins = opt_bins(spx1_ret))
 
 """SPX2_DF""" 
 #set index to datetime to resample to 15 minute intervals 
@@ -57,6 +62,7 @@ spx15_df = df_resample(spx15_df,'quote_datetime')
 clean_df(spx15_df,'quote_datetime','date','close')
 spx15_df['spx_returns'] = spx15_df.groupby('date')['close'].apply(lambda x : np.log(x) - np.log(x.shift(1)))
 spx15_ret = remove_outliers(spx15_df,'spx_returns')
+spx15_ret.plot.hist(bins = opt_bins(spx15_ret))
 
 """VIX_DF""" 
 #making into 15 min interval
@@ -77,6 +83,7 @@ vix_df['exp_month'] = np.searchsorted(vix_exps,vix_df.expiration) - np.searchsor
 vix_df = vix_df.loc[vix_df.exp_month == 1] 
 vix_df['vix_returns'] = np.log(vix_df.close) - np.log(vix_df.close.shift(1)) 
 vix_ret = remove_outliers(vix_df,'vix_returns')
+vix_ret.plot.hist(bins = opt_bins(vix_ret))
 
 """Calc Beta Linear Regression"""
 #get rid of duplicate quote_dateime to merge then merge
